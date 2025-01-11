@@ -130,6 +130,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 ## **Support**
 If you encounter any issues, feel free to open an issue on the repository or contact us at [suporte@gruposkip.com](mailto:suporte@gruposkip.com).
 
----
-
-Let me know if you'd like additional customization for this `README.md`.
