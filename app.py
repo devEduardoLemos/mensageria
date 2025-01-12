@@ -1,7 +1,7 @@
-# File: postmark_email_sender.py
-
-import requests
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
+import requests
 import os
 
 #load environment variables
@@ -13,6 +13,8 @@ POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
 # Your Postmark server token
 POSTMARK_SERVER_TOKEN = os.getenv("POSTMARK_SERVER_TOKEN")
 
+
+#Functions
 def send_email(from_address, to_address, subject, html_body, message_stream="outbound"):
     """
     Sends an email using the Postmark API.
@@ -53,13 +55,37 @@ def send_email(from_address, to_address, subject, html_body, message_stream="out
         print(f"Error sending email: {e}")
         return {"error": str(e)}
 
-# Example usage
-if __name__ == "__main__":
-    from_address = "naoresponder@gruposkip.com"
-    to_address = "eduardo.lemosinc@gmail.com"
-    subject = "Racha Conta"
-    html_body = "<strong>Hello Sócios</strong> Mensageria is being born 2"
 
-    # Send email
-    response = send_email(from_address, to_address, subject, html_body)
-    print(response)
+#Initialize FastAPI
+app = FastAPI();
+
+#Pydantic model
+class EmailRequest(BaseModel):
+    from_adress: str
+    to_address: str
+    subject: str
+    html_body: str
+
+
+#FastAPI endpoints
+@app.post("/send-email")
+async def send_email_endpoint(request: Request):
+    """
+    Endpoint to send email
+    """
+    try:
+        #get the JSON payload
+        email_request = await request.json()
+
+        response = send_email(
+            email_request.get("from_address"),
+            email_request.get("to_address"),
+            email_request.get("subject"),
+            email_request.get("html_body"),
+        )
+        
+        return{"response": response}
+    except HTTPException as e:
+        raise e
+
+
