@@ -1,2 +1,26 @@
-# Ignore .env files
+# Virtual environment
+env/
+venv/
+ENV/
+
+# Python files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Environment variables
 .env
+
+# Logs and debug output
+*.log
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
