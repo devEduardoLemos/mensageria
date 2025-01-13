@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
 from email_validator import validate_email, EmailNotValidError
@@ -13,6 +13,9 @@ POSTMARK_API_URL = os.getenv("POSTMARK_API_URL")
 
 # Your Postmark server token
 POSTMARK_SERVER_TOKEN = os.getenv("POSTMARK_SERVER_TOKEN")
+
+# API KEY for access to the services
+API_KEY = os.getenv("API_KEY")
 
 
 #Functions
@@ -75,6 +78,23 @@ def validate_email_addresses(email: str) -> dict:
         return {"email": email, "is_valid": False}  # Return original email with invalid status
 
 
+def validate_api_key(x_api_key: str = Header(...)):
+    """
+    Validates the API key provided in the request header.
+
+    Args:
+        x_api_key (str): The API key from the `x-api-key` header.
+
+    Raises:
+        HTTPException: If the API key is missing or invalid.
+    """
+    if x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key",
+        )
+    return True
+
 #Initialize FastAPI
 app = FastAPI();
 
@@ -88,10 +108,15 @@ class EmailRequest(BaseModel):
 
 #FastAPI endpoints
 @app.post("/send-email")
-async def send_email_endpoint(email_request:EmailRequest):
+async def send_email_endpoint(
+    email_request:EmailRequest,
+    x_api_key: str=Depends(validate_api_key),
+    ):
     """
     Endpoint to send email
+    Protected with API KEY
     """
+
     try:
         #validate email
         if(validate_email_addresses(email_request.from_address)["is_valid"]):
@@ -122,4 +147,9 @@ async def send_email_endpoint(email_request:EmailRequest):
     except HTTPException as e:
         raise e
 
-
+@app.get("/test")
+def test_header(x_api_key: str = Header(...)):
+    print(f"Received x-api-key: {x_api_key}")
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return {"message": "Valid API key"}
