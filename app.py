@@ -146,10 +146,3 @@ async def send_email_endpoint(
         }
     except HTTPException as e:
         raise e
-
-@app.get("/test")
-def test_header(x_api_key: str = Header(...)):
-    print(f"Received x-api-key: {x_api_key}")
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return {"message": "Valid API key"}
